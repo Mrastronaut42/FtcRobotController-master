@@ -1,0 +1,178 @@
+<html>
+<head>
+<title>RobotAutoDriveByEncoder_Linear.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #629755; font-style: italic;}
+.s3 { color: #6a8759;}
+.s4 { color: #808080;}
+.s5 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+RobotAutoDriveByEncoder_Linear.java</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">package </span><span class="s1">org.firstinspires.ftc.teamcode</span><span class="s0">;</span>
+<a name="l2"><span class="ln">2    </span></a>
+<a name="l3"><span class="ln">3    </span></a><span class="s0">import </span><span class="s1">com.qualcomm.robotcore.eventloop.opmode.Autonomous</span><span class="s0">;</span>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">import </span><span class="s1">com.qualcomm.robotcore.eventloop.opmode.LinearOpMode</span><span class="s0">;</span>
+<a name="l5"><span class="ln">5    </span></a><span class="s0">import </span><span class="s1">com.qualcomm.robotcore.hardware.DcMotor</span><span class="s0">;</span>
+<a name="l6"><span class="ln">6    </span></a><span class="s0">import </span><span class="s1">com.qualcomm.robotcore.util.ElapsedTime</span><span class="s0">;</span>
+<a name="l7"><span class="ln">7    </span></a>
+<a name="l8"><span class="ln">8    </span></a><span class="s2">/**</span>
+<a name="l9"><span class="ln">9    </span></a> <span class="s2">* This file illustrates the concept of driving a path based on encoder counts.</span>
+<a name="l10"><span class="ln">10   </span></a> <span class="s2">* The code is structured as a LinearOpMode</span>
+<a name="l11"><span class="ln">11   </span></a> <span class="s2">*</span>
+<a name="l12"><span class="ln">12   </span></a> <span class="s2">* The code REQUIRES that you DO have encoders on the wheels,</span>
+<a name="l13"><span class="ln">13   </span></a> <span class="s2">*   otherwise you would use: RobotAutoDriveByTime;</span>
+<a name="l14"><span class="ln">14   </span></a> <span class="s2">*</span>
+<a name="l15"><span class="ln">15   </span></a> <span class="s2">*  This code ALSO requires that the drive Motors have been configured such that a positive</span>
+<a name="l16"><span class="ln">16   </span></a> <span class="s2">*  power command moves them forward, and causes the encoders to count UP.</span>
+<a name="l17"><span class="ln">17   </span></a> <span class="s2">*</span>
+<a name="l18"><span class="ln">18   </span></a> <span class="s2">*   The desired path in this example is:</span>
+<a name="l19"><span class="ln">19   </span></a> <span class="s2">*   - Drive forward for 48 inches</span>
+<a name="l20"><span class="ln">20   </span></a> <span class="s2">*   - Spin right for 12 Inches</span>
+<a name="l21"><span class="ln">21   </span></a> <span class="s2">*   - Drive Backward for 24 inches</span>
+<a name="l22"><span class="ln">22   </span></a> <span class="s2">*   - Stop and close the claw.</span>
+<a name="l23"><span class="ln">23   </span></a> <span class="s2">*</span>
+<a name="l24"><span class="ln">24   </span></a> <span class="s2">*  The code is written using a method called: encoderDrive(speed, leftInches, rightInches, timeoutS)</span>
+<a name="l25"><span class="ln">25   </span></a> <span class="s2">*  that performs the actual movement.</span>
+<a name="l26"><span class="ln">26   </span></a> <span class="s2">*  This method assumes that each movement is relative to the last stopping place.</span>
+<a name="l27"><span class="ln">27   </span></a> <span class="s2">*  There are other ways to perform encoder based moves, but this method is probably the simplest.</span>
+<a name="l28"><span class="ln">28   </span></a> <span class="s2">*  This code uses the RUN_TO_POSITION mode to enable the Motor controllers to generate the run profile</span>
+<a name="l29"><span class="ln">29   </span></a> <span class="s2">*</span>
+<a name="l30"><span class="ln">30   </span></a> <span class="s2">* Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.</span>
+<a name="l31"><span class="ln">31   </span></a> <span class="s2">* Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list</span>
+<a name="l32"><span class="ln">32   </span></a> <span class="s2">*/</span>
+<a name="l33"><span class="ln">33   </span></a>
+<a name="l34"><span class="ln">34   </span></a><span class="s1">@Autonomous(name=</span><span class="s3">&quot;Robot: Auto Drive By Encoder&quot;</span><span class="s0">, </span><span class="s1">group=</span><span class="s3">&quot;Robot&quot;</span><span class="s1">)</span>
+<a name="l35"><span class="ln">35   </span></a><span class="s0">public class </span><span class="s1">RobotAutoDriveByEncoder_Linear </span><span class="s0">extends </span><span class="s1">LinearOpMode {</span>
+<a name="l36"><span class="ln">36   </span></a>
+<a name="l37"><span class="ln">37   </span></a>    <span class="s4">/* Declare OpMode members. */</span>
+<a name="l38"><span class="ln">38   </span></a>    <span class="s0">private </span><span class="s1">DcMotor leftDrive   = </span><span class="s0">null;</span>
+<a name="l39"><span class="ln">39   </span></a>    <span class="s0">private </span><span class="s1">DcMotor rightDrive  = </span><span class="s0">null;</span>
+<a name="l40"><span class="ln">40   </span></a>
+<a name="l41"><span class="ln">41   </span></a>    <span class="s0">private </span><span class="s1">ElapsedTime runtime = </span><span class="s0">new </span><span class="s1">ElapsedTime()</span><span class="s0">;</span>
+<a name="l42"><span class="ln">42   </span></a>
+<a name="l43"><span class="ln">43   </span></a>    <span class="s4">// Calculate the COUNTS_PER_INCH for your specific drive train.</span>
+<a name="l44"><span class="ln">44   </span></a>    <span class="s4">// Go to your motor vendor website to determine your motor's COUNTS_PER_MOTOR_REV</span>
+<a name="l45"><span class="ln">45   </span></a>    <span class="s4">// For external drive gearing, set DRIVE_GEAR_REDUCTION as needed.</span>
+<a name="l46"><span class="ln">46   </span></a>    <span class="s4">// For example, use a value of 2.0 for a 12-tooth spur gear driving a 24-tooth spur gear.</span>
+<a name="l47"><span class="ln">47   </span></a>    <span class="s4">// This is gearing DOWN for less speed and more torque.</span>
+<a name="l48"><span class="ln">48   </span></a>    <span class="s4">// For gearing UP, use a gear ratio less than 1.0. Note this will affect the direction of wheel rotation.</span>
+<a name="l49"><span class="ln">49   </span></a>    <span class="s0">static final double     </span><span class="s1">COUNTS_PER_MOTOR_REV    = </span><span class="s5">1440 </span><span class="s0">;    </span><span class="s4">// eg: TETRIX Motor Encoder</span>
+<a name="l50"><span class="ln">50   </span></a>    <span class="s0">static final double     </span><span class="s1">DRIVE_GEAR_REDUCTION    = </span><span class="s5">1.0 </span><span class="s0">;     </span><span class="s4">// No External Gearing.</span>
+<a name="l51"><span class="ln">51   </span></a>    <span class="s0">static final double     </span><span class="s1">WHEEL_DIAMETER_INCHES   = </span><span class="s5">4.0 </span><span class="s0">;     </span><span class="s4">// For figuring circumference</span>
+<a name="l52"><span class="ln">52   </span></a>    <span class="s0">static final double     </span><span class="s1">COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /</span>
+<a name="l53"><span class="ln">53   </span></a>            <span class="s1">(WHEEL_DIAMETER_INCHES * </span><span class="s5">3.1415</span><span class="s1">)</span><span class="s0">;</span>
+<a name="l54"><span class="ln">54   </span></a>    <span class="s0">static final double     </span><span class="s1">DRIVE_SPEED             = </span><span class="s5">0.6</span><span class="s0">;</span>
+<a name="l55"><span class="ln">55   </span></a>    <span class="s0">static final double     </span><span class="s1">TURN_SPEED              = </span><span class="s5">0.5</span><span class="s0">;</span>
+<a name="l56"><span class="ln">56   </span></a>
+<a name="l57"><span class="ln">57   </span></a>    <span class="s1">@Override</span>
+<a name="l58"><span class="ln">58   </span></a>    <span class="s0">public void </span><span class="s1">runOpMode() {</span>
+<a name="l59"><span class="ln">59   </span></a>
+<a name="l60"><span class="ln">60   </span></a>        <span class="s4">// Initialize the drive system variables.</span>
+<a name="l61"><span class="ln">61   </span></a>        <span class="s1">leftDrive  = hardwareMap.get(DcMotor.</span><span class="s0">class, </span><span class="s3">&quot;lf&quot;</span><span class="s1">)</span><span class="s0">;</span>
+<a name="l62"><span class="ln">62   </span></a>        <span class="s1">rightDrive = hardwareMap.get(DcMotor.</span><span class="s0">class, </span><span class="s3">&quot;rf&quot;</span><span class="s1">)</span><span class="s0">;</span>
+<a name="l63"><span class="ln">63   </span></a>
+<a name="l64"><span class="ln">64   </span></a>        <span class="s4">// To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.</span>
+<a name="l65"><span class="ln">65   </span></a>        <span class="s4">// When run, this OpMode should start both motors driving forward. So adjust these two lines based on your first test drive.</span>
+<a name="l66"><span class="ln">66   </span></a>        <span class="s4">// Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips</span>
+<a name="l67"><span class="ln">67   </span></a>        <span class="s1">leftDrive.setDirection(DcMotor.Direction.REVERSE)</span><span class="s0">;</span>
+<a name="l68"><span class="ln">68   </span></a>        <span class="s1">rightDrive.setDirection(DcMotor.Direction.FORWARD)</span><span class="s0">;</span>
+<a name="l69"><span class="ln">69   </span></a>
+<a name="l70"><span class="ln">70   </span></a>        <span class="s1">leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER)</span><span class="s0">;</span>
+<a name="l71"><span class="ln">71   </span></a>        <span class="s1">rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER)</span><span class="s0">;</span>
+<a name="l72"><span class="ln">72   </span></a>
+<a name="l73"><span class="ln">73   </span></a>        <span class="s1">leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER)</span><span class="s0">;</span>
+<a name="l74"><span class="ln">74   </span></a>        <span class="s1">rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER)</span><span class="s0">;</span>
+<a name="l75"><span class="ln">75   </span></a>
+<a name="l76"><span class="ln">76   </span></a>        <span class="s4">// Send telemetry message to indicate successful Encoder reset</span>
+<a name="l77"><span class="ln">77   </span></a>        <span class="s1">telemetry.addData(</span><span class="s3">&quot;Starting at&quot;</span><span class="s0">,  </span><span class="s3">&quot;%7d :%7d&quot;</span><span class="s0">,</span>
+<a name="l78"><span class="ln">78   </span></a>                <span class="s1">leftDrive.getCurrentPosition()</span><span class="s0">,</span>
+<a name="l79"><span class="ln">79   </span></a>                <span class="s1">rightDrive.getCurrentPosition())</span><span class="s0">;</span>
+<a name="l80"><span class="ln">80   </span></a>        <span class="s1">telemetry.update()</span><span class="s0">;</span>
+<a name="l81"><span class="ln">81   </span></a>
+<a name="l82"><span class="ln">82   </span></a>        <span class="s4">// Wait for the game to start (driver presses PLAY)</span>
+<a name="l83"><span class="ln">83   </span></a>        <span class="s1">waitForStart()</span><span class="s0">;</span>
+<a name="l84"><span class="ln">84   </span></a>
+<a name="l85"><span class="ln">85   </span></a>        <span class="s4">// Step through each leg of the path,</span>
+<a name="l86"><span class="ln">86   </span></a>        <span class="s4">// Note: Reverse movement is obtained by setting a negative distance (not speed)</span>
+<a name="l87"><span class="ln">87   </span></a>        <span class="s1">encoderDrive(DRIVE_SPEED</span><span class="s0">,  </span><span class="s5">48</span><span class="s0">,  </span><span class="s5">48</span><span class="s0">, </span><span class="s5">5.0</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">// S1: Forward 47 Inches with 5 Sec timeout</span>
+<a name="l88"><span class="ln">88   </span></a>        <span class="s1">encoderDrive(TURN_SPEED</span><span class="s0">,   </span><span class="s5">12</span><span class="s0">, </span><span class="s1">-</span><span class="s5">12</span><span class="s0">, </span><span class="s5">4.0</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">// S2: Turn Right 12 Inches with 4 Sec timeout</span>
+<a name="l89"><span class="ln">89   </span></a>        <span class="s1">encoderDrive(DRIVE_SPEED</span><span class="s0">, </span><span class="s1">-</span><span class="s5">24</span><span class="s0">, </span><span class="s1">-</span><span class="s5">24</span><span class="s0">, </span><span class="s5">4.0</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">// S3: Reverse 24 Inches with 4 Sec timeout</span>
+<a name="l90"><span class="ln">90   </span></a>
+<a name="l91"><span class="ln">91   </span></a>        <span class="s1">telemetry.addData(</span><span class="s3">&quot;Path&quot;</span><span class="s0">, </span><span class="s3">&quot;Complete&quot;</span><span class="s1">)</span><span class="s0">;</span>
+<a name="l92"><span class="ln">92   </span></a>        <span class="s1">telemetry.update()</span><span class="s0">;</span>
+<a name="l93"><span class="ln">93   </span></a>        <span class="s1">sleep(</span><span class="s5">1000</span><span class="s1">)</span><span class="s0">;  </span><span class="s4">// pause to display final telemetry message.</span>
+<a name="l94"><span class="ln">94   </span></a>    <span class="s1">}</span>
+<a name="l95"><span class="ln">95   </span></a>
+<a name="l96"><span class="ln">96   </span></a>    <span class="s4">/* 
+<a name="l97"><span class="ln">97   </span></a>     *  Method to perform a relative move, based on encoder counts. 
+<a name="l98"><span class="ln">98   </span></a>     *  Encoders are not reset as the move is based on the current position. 
+<a name="l99"><span class="ln">99   </span></a>     *  Move will stop if any of three conditions occur: 
+<a name="l100"><span class="ln">100  </span></a>     *  1) Move gets to the desired position 
+<a name="l101"><span class="ln">101  </span></a>     *  2) Move runs out of time 
+<a name="l102"><span class="ln">102  </span></a>     *  3) Driver stops the opmode running. 
+<a name="l103"><span class="ln">103  </span></a>     */</span>
+<a name="l104"><span class="ln">104  </span></a>    <span class="s0">public void </span><span class="s1">encoderDrive(</span><span class="s0">double </span><span class="s1">speed</span><span class="s0">,</span>
+<a name="l105"><span class="ln">105  </span></a>                             <span class="s0">double </span><span class="s1">leftInches</span><span class="s0">, double </span><span class="s1">rightInches</span><span class="s0">,</span>
+<a name="l106"><span class="ln">106  </span></a>                             <span class="s0">double </span><span class="s1">timeoutS) {</span>
+<a name="l107"><span class="ln">107  </span></a>        <span class="s0">int </span><span class="s1">newLeftTarget</span><span class="s0">;</span>
+<a name="l108"><span class="ln">108  </span></a>        <span class="s0">int </span><span class="s1">newRightTarget</span><span class="s0">;</span>
+<a name="l109"><span class="ln">109  </span></a>
+<a name="l110"><span class="ln">110  </span></a>        <span class="s4">// Ensure that the opmode is still active</span>
+<a name="l111"><span class="ln">111  </span></a>        <span class="s0">if </span><span class="s1">(opModeIsActive()) {</span>
+<a name="l112"><span class="ln">112  </span></a>
+<a name="l113"><span class="ln">113  </span></a>            <span class="s4">// Determine new target position, and pass to motor controller</span>
+<a name="l114"><span class="ln">114  </span></a>            <span class="s1">newLeftTarget = leftDrive.getCurrentPosition() + (</span><span class="s0">int</span><span class="s1">)(leftInches * COUNTS_PER_INCH)</span><span class="s0">;</span>
+<a name="l115"><span class="ln">115  </span></a>            <span class="s1">newRightTarget = rightDrive.getCurrentPosition() + (</span><span class="s0">int</span><span class="s1">)(rightInches * COUNTS_PER_INCH)</span><span class="s0">;</span>
+<a name="l116"><span class="ln">116  </span></a>            <span class="s1">leftDrive.setTargetPosition(newLeftTarget)</span><span class="s0">;</span>
+<a name="l117"><span class="ln">117  </span></a>            <span class="s1">rightDrive.setTargetPosition(newRightTarget)</span><span class="s0">;</span>
+<a name="l118"><span class="ln">118  </span></a>
+<a name="l119"><span class="ln">119  </span></a>            <span class="s4">// Turn On RUN_TO_POSITION</span>
+<a name="l120"><span class="ln">120  </span></a>            <span class="s1">leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION)</span><span class="s0">;</span>
+<a name="l121"><span class="ln">121  </span></a>            <span class="s1">rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION)</span><span class="s0">;</span>
+<a name="l122"><span class="ln">122  </span></a>
+<a name="l123"><span class="ln">123  </span></a>            <span class="s4">// reset the timeout time and start motion.</span>
+<a name="l124"><span class="ln">124  </span></a>            <span class="s1">runtime.reset()</span><span class="s0">;</span>
+<a name="l125"><span class="ln">125  </span></a>            <span class="s1">leftDrive.setPower(Math.abs(speed))</span><span class="s0">;</span>
+<a name="l126"><span class="ln">126  </span></a>            <span class="s1">rightDrive.setPower(Math.abs(speed))</span><span class="s0">;</span>
+<a name="l127"><span class="ln">127  </span></a>
+<a name="l128"><span class="ln">128  </span></a>            <span class="s4">// keep looping while we are still active, and there is time left, and both motors are running.</span>
+<a name="l129"><span class="ln">129  </span></a>            <span class="s4">// Note: We use (isBusy() &amp;&amp; isBusy()) in the loop test, which means that when EITHER motor hits</span>
+<a name="l130"><span class="ln">130  </span></a>            <span class="s4">// its target position, the motion will stop.  This is &quot;safer&quot; in the event that the robot will</span>
+<a name="l131"><span class="ln">131  </span></a>            <span class="s4">// always end the motion as soon as possible.</span>
+<a name="l132"><span class="ln">132  </span></a>            <span class="s4">// However, if you require that BOTH motors have finished their moves before the robot continues</span>
+<a name="l133"><span class="ln">133  </span></a>            <span class="s4">// onto the next step, use (isBusy() || isBusy()) in the loop test.</span>
+<a name="l134"><span class="ln">134  </span></a>            <span class="s0">while </span><span class="s1">(opModeIsActive() &amp;&amp;</span>
+<a name="l135"><span class="ln">135  </span></a>                    <span class="s1">(runtime.seconds() &lt; timeoutS) &amp;&amp;</span>
+<a name="l136"><span class="ln">136  </span></a>                    <span class="s1">(leftDrive.isBusy() &amp;&amp; rightDrive.isBusy())) {</span>
+<a name="l137"><span class="ln">137  </span></a>
+<a name="l138"><span class="ln">138  </span></a>                <span class="s4">// Display it for the driver.</span>
+<a name="l139"><span class="ln">139  </span></a>                <span class="s1">telemetry.addData(</span><span class="s3">&quot;Running to&quot;</span><span class="s0">,  </span><span class="s3">&quot; %7d :%7d&quot;</span><span class="s0">, </span><span class="s1">newLeftTarget</span><span class="s0">,  </span><span class="s1">newRightTarget)</span><span class="s0">;</span>
+<a name="l140"><span class="ln">140  </span></a>                <span class="s1">telemetry.addData(</span><span class="s3">&quot;Currently at&quot;</span><span class="s0">,  </span><span class="s3">&quot; at %7d :%7d&quot;</span><span class="s0">,</span>
+<a name="l141"><span class="ln">141  </span></a>                        <span class="s1">leftDrive.getCurrentPosition()</span><span class="s0">, </span><span class="s1">rightDrive.getCurrentPosition())</span><span class="s0">;</span>
+<a name="l142"><span class="ln">142  </span></a>                <span class="s1">telemetry.update()</span><span class="s0">;</span>
+<a name="l143"><span class="ln">143  </span></a>            <span class="s1">}</span>
+<a name="l144"><span class="ln">144  </span></a>
+<a name="l145"><span class="ln">145  </span></a>            <span class="s4">// Stop all motion;</span>
+<a name="l146"><span class="ln">146  </span></a>            <span class="s1">leftDrive.setPower(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span>
+<a name="l147"><span class="ln">147  </span></a>            <span class="s1">rightDrive.setPower(</span><span class="s5">0</span><span class="s1">)</span><span class="s0">;</span>
+<a name="l148"><span class="ln">148  </span></a>
+<a name="l149"><span class="ln">149  </span></a>            <span class="s4">// Turn off RUN_TO_POSITION</span>
+<a name="l150"><span class="ln">150  </span></a>            <span class="s1">leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER)</span><span class="s0">;</span>
+<a name="l151"><span class="ln">151  </span></a>            <span class="s1">rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER)</span><span class="s0">;</span>
+<a name="l152"><span class="ln">152  </span></a>
+<a name="l153"><span class="ln">153  </span></a>            <span class="s1">sleep(</span><span class="s5">250</span><span class="s1">)</span><span class="s0">;   </span><span class="s4">// optional pause after each move.</span>
+<a name="l154"><span class="ln">154  </span></a>        <span class="s1">}</span>
+<a name="l155"><span class="ln">155  </span></a>    <span class="s1">}</span>
+<a name="l156"><span class="ln">156  </span></a><span class="s1">}</span></pre>
+</body>
+</html>
